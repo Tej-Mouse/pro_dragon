@@ -15,6 +15,7 @@ class Item:
         self.weight = weight
         self.amount = 0
         self.type = category
+        self.is_equipped = False
 
         # None Objects
 
@@ -26,13 +27,7 @@ class Item:
         }
 
     def __str__(self):
-        object_type = "Item Type | "
-
-        types = self.get_type()
-        for i in range(len(types)):
-            object_type += types[i] + ", "
-        object_type = object_type.rstrip(", ")
-        object_type += "\n"
+        object_type = "Item Type | " + self.get_type() + "\n"
 
         name = "Name      | " + self.get_name().replace("_", " ") + '\n'
         cost = "Cost      | " + str(self.get_cost()[0]) + " " + self.get_cost()[1] + '\n'
@@ -62,11 +57,28 @@ class Item:
         """
         return self.weight
 
+    def get_total_weight(self):
+        return self.weight * self.amount
+
     def get_cost(self):
         """
         :return: tuple
         """
         return self.cost
+
+    def get_normal_cost(self):
+        """
+
+        :return: cost of item in copper
+        """
+        cost = {
+            "cp": self.get_cost()[0],
+            "sp": self.get_cost()[0] * 10,
+            "ep": self.get_cost()[0] * 50,
+            "gp": self.get_cost()[0] * 100,
+            "pp": self.get_cost()[0] * 1000,
+        }
+        return cost[self.cost[1]]
 
     def get_type(self):
         """
@@ -113,6 +125,18 @@ class Item:
         else:
             self.amount -= amount_subtracted
 
+    # __________________________________________________________________
+
+    def equip(self):
+        self.is_equipped = True
+
+    def unequiped(self):
+        self.is_equipped = False
+
+    def is_equipped(self):
+
+        return self.is_equipped
+
 
 class Weapon(Item):
     def __init__(self,name: str, weight: float, cost: tuple, damage_dice: tuple,
@@ -128,6 +152,7 @@ class Weapon(Item):
         }
 
     def __str__(self):
+        object_type = "Item Type  | " + self.get_type() + "\n"
         weapon_class = "Class      | " + self.get_weapon_class() + "\n"
         name = "Name       | " + self.name.replace("_", " ") + '\n'
         cost = "Cost       | " + str(self.cost[0]) + " " + self.cost[1] + '\n'
@@ -139,4 +164,4 @@ class Weapon(Item):
             properties += existing_properties[i] + ", "
         properties = properties.rstrip(", ")
         properties += "\n"
-        return line + weapon_class + name + cost + damage + weight + properties + line
+        return line + object_type + weapon_class + name + cost + damage + weight + properties + line

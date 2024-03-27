@@ -1,4 +1,5 @@
 import sys
+import subprocess
 from PyQt5.QtWidgets import (
     QApplication,
     QStackedLayout,
@@ -21,26 +22,10 @@ from functools import partial
 import charecter
 import pyqt5_Custom as PYCustom
 import appHelperTools as aHT
-from Scripts import objectsDnD, Reading
+from Scripts import objectsDnD, Reading, EZPaths
+import style
 
-LabelFont1 = QFont('Times', 15, QFont.Decorative)
-
-LabelFont2 = QFont('Times', 12, QFont.Decorative)  # Attributes
-LabelFont3 = QFont('Times', 10, QFont.Decorative)  # Skills
-
-TabButtonSheet = "QPushButton {color: white}"
-SubButtonSheet = ("QPushButton {color: white; background-color: grey; border-radius: 9px} "
-                  "QPushButton:pressed {color: white; background-color: darkgrey}"
-                  "QPushButton:hover {color: white; background-color: darkred}"
-                  )
-
-SubCheckedSheet = ("QCheckBox {color: white; background-color: grey; border-radius: 9px} "
-                   "QCheckBox:pressed {color: white; background-color: darkgrey}"
-                   "QCheckBox:hover {color: white; background-color: darkred}"
-                   )
-
-
-# SubButtonSheet1 = ""
+# style.SubButtonSheet1 = ""
 
 class DnDWindow(QMainWindow):
 
@@ -100,11 +85,14 @@ class DnDWindow(QMainWindow):
 
         # Tab Buttons_________________________________________________________________________________________________
 
-        button_layout.addWidget(aHT.CreateTabButton(self.switch_tab, 0, LabelFont2, TabButtonSheet, "Main Window"))
-        button_layout.addWidget(
-            aHT.CreateTabButton(self.switch_tab, 1, LabelFont2, TabButtonSheet, "Features && Traits"))
-        button_layout.addWidget(aHT.CreateTabButton(self.switch_tab, 2, LabelFont2, TabButtonSheet, "Inventory"))
-        button_layout.addWidget(aHT.CreateTabButton(self.switch_tab, 3, LabelFont2, TabButtonSheet, "Options"))
+        button_layout.addWidget(aHT.CreateTabButton(self.switch_tab, 0, style.LabelFont2,
+                                                    style.TabButtonSheet2, "Main Window"))
+        button_layout.addWidget(aHT.CreateTabButton(self.switch_tab, 1, style.LabelFont2,
+                                                    style.TabButtonSheet2, "Features && Traits"))
+        button_layout.addWidget(aHT.CreateTabButton(self.switch_tab, 2, style.LabelFont2,
+                                                    style.TabButtonSheet2, "Inventory"))
+        button_layout.addWidget(aHT.CreateTabButton(self.switch_tab, 3, style.LabelFont2,
+                                                    style.TabButtonSheet2, "Options"))
 
         """Base Menu_________________________________________________________________________________________________"""
         main_stats_layout = QHBoxLayout()
@@ -157,14 +145,14 @@ class DnDWindow(QMainWindow):
 
         inventory_layout.addWidget(self.inventory_widget.get_widget())
         """Options___________________________________________________________________________________________________"""
-        saveButton = aHT.CreateGenButton("Save",LabelFont1,SubButtonSheet,self.save,minWidth=400)
+        saveButton = aHT.CreateGenButton("Save",style.LabelFont1,style.SubButtonSheet,self.save,minWidth=400)
 
         DarkModeToggle = QCheckBox()
         DarkModeToggle.setText("Dark Mode Toggled: On")
-        DarkModeToggle.setFont(LabelFont1)
+        DarkModeToggle.setFont(style.LabelFont1)
         DarkModeToggle.checked = True
         DarkModeToggle.clicked.connect(partial(self.dark_mode_toggle, DarkModeToggle.setText))
-        DarkModeToggle.setStyleSheet(SubCheckedSheet)
+        DarkModeToggle.setStyleSheet(style.SubCheckedSheet)
 
         frame = QFrame()
         frame.setFrameShape(QFrame.Panel)
@@ -180,9 +168,11 @@ class DnDWindow(QMainWindow):
         # options_widget.addLayout(options_layout)
 
     def test(self):
-        self.tcharecter.alter_attribute('prof','starter_level', self.tcharecter.get_specific_attribute('prof').get_total_base() + 3)
+        self.tcharecter.alter_attribute('prof','starter_level',
+                                        self.tcharecter.get_specific_attribute('prof').get_total_base() + 3)
         self.tcharecter.alter_attribute('chr', 'starter_level', 8)
-        self.tcharecter.alter_attribute('dex', 'starter_level',  self.tcharecter.get_specific_attribute('dex').get_total_base() + 3)
+        self.tcharecter.alter_attribute('dex', 'starter_level',
+                                        self.tcharecter.get_specific_attribute('dex').get_total_base() + 3)
         self.tcharecter.get_specific_skills('sleight').give_expertise()
         self.tcharecter.get_specific_top('name').set('Lucas Cyr')
         self.tcharecter.get_specific_top('class').set('Killer')
@@ -200,10 +190,11 @@ class DnDWindow(QMainWindow):
         self.tcharecter.get_specific_rp_traits('ideals').set_text("Man, you don't wanna know")
 
         inventory = self.tcharecter.get_inventory()
-        apple = objectsDnD.Item("Apple", 1, category=["Food"])
+        apple = objectsDnD.Item("Apple", 1, category="Food")
         pear = objectsDnD.Item("Pear", 1)
         ear = objectsDnD.Item("Ear", 10, cost=(100, "gp"))
-        sword = objectsDnD.Weapon("Sword", 10, (10000, "gp"), (1, 4), "piercing", ["Throw"], "Simple")
+        sword = objectsDnD.Weapon("Sword", 10, (10000, "gp"), (1, 4),
+                                  "piercing", ["Throw"], "Simple")
 
         inventory.add_item(sword.get_key_name(), sword, 1)
         inventory.add_item(apple.get_key_name(), apple, 1)
@@ -211,7 +202,7 @@ class DnDWindow(QMainWindow):
         inventory.add_item(ear.get_key_name(), ear, 1)
         inventory.add_money(inventory.get_money("gp")[0] + 1, "gp")
 
-        testWeapons = Reading.WeaponReader("./txtFiles/allWeapons/baseWeapons.txt")
+        testWeapons = Reading.WeaponReader(EZPaths.Weapon_Path)
         list_weapons = testWeapons.get_all_weapons()
         for i in range(len(list_weapons)):
             inventory.add_item(list_weapons[i].get_key_name(), list_weapons[i], i+1)

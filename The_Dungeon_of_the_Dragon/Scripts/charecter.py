@@ -10,7 +10,9 @@ import charManagers
 class CharacterSheet:
 
     def __init__(self):
-        """ Charecter Statistics-------------------------------------------------------------------------------------"""
+        """"""
+
+        """ Role play-------------------------------------------------------------------------------------"""
         # name, class, level, background, race, alignment, experience points
         self.top_stats = {
             'name': ruleTools.TopStatValue('Name', False),
@@ -22,6 +24,14 @@ class CharacterSheet:
             'experience': ruleTools.TopStatValue('Experience points', True),
         }
 
+        self.person = {
+            'person': ruleTools.RPTraits('Personality Traits'),
+            'ideals': ruleTools.RPTraits('Ideals'),
+            'bonds': ruleTools.RPTraits('Bonds'),
+            'flaws': ruleTools.RPTraits('Flaws')
+        }
+
+        """ Charecter Statistics-------------------------------------------------------------------------------------"""
         # Ability Score Counter
         self.AbS = {
             'str': ruleTools.Stat('Strength'),
@@ -117,7 +127,7 @@ class CharacterSheet:
             'chr': chr_skills
         }
 
-        # Stats for the middle top of the sheet
+        """Stats for the middle top of the sheet___________________________"""
         self.mid_stat_top = {
             'ac': ruleTools.Stat('Armor Class'),
             'init': ruleTools.Skill('Initiative', self.AbS['dex'], self.AbS['prof']),
@@ -133,15 +143,12 @@ class CharacterSheet:
             'death': ruleTools.DeathSavingThrows(),
         }
 
-        self.inventory = charManagers.Inventory()
+        """ Beyond Stats_____"""
+        self.encumberance = ruleTools.Encumberance(self.AbS['str'])
+        self.inventory = charManagers.Inventory(self.encumberance)
+
 
         # Stats for the right top of the screen
-        self.person = {
-            'person': ruleTools.RPTraits('Personality Traits'),
-            'ideals': ruleTools.RPTraits('Ideals'),
-            'bonds': ruleTools.RPTraits('Bonds'),
-            'flaws': ruleTools.RPTraits('Flaws')
-        }
 
 
 

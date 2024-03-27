@@ -392,3 +392,87 @@ class RPTraits:
 
     def set_text(self, text: str):
         self.text = text
+
+
+class Encumberance:
+
+    def __init__(self,str_score:Stat):
+        self.weight = 0
+        self.enc_status = -1  # -1: unencumbered| 0: lvl0 encumbered| 1: lvl1 encumvered| 2: at/past max encumbered
+        self.str_score = str_score
+        self.enc_levels_multipliers = {
+            'lvl0': 5,
+            'lvl1': 10,
+            'lvl2': 15  # max
+        }
+        self.enc_levels = self.calculate_encumberence_levels()
+
+    def set_encumberance_level_multiplier(self,lvl:int, multiplier:float):
+        """
+
+        :param lvl: encumberence level multiplier to set (lvl0,lvl1,lv2)
+        :param multiplier: Multiplier to be set as
+        :return:
+        """
+        self.enc_levels_multipliers["lvl" + str(lvl)] = multiplier
+        self.update()
+
+    def update(self):
+        self.enc_levels = self.calculate_encumberence_levels()
+        self.enc_status = self.calculate_encumberence_status()
+
+    def calculate_encumberence_levels(self):
+        """
+        :return: Encumberence levels in list [lvl0,lvl1,lvl2]
+        """
+        str_score = self.str_score.get_total_base()
+        print(str_score)
+        return [self.enc_levels_multipliers['lvl0'] * str_score,
+                self.enc_levels_multipliers['lvl1'] * str_score,
+                self.enc_levels_multipliers['lvl2'] * str_score]
+
+    def calculate_encumberence_status(self):
+        """
+        :return: calculate if current weight is > lvl0,lv1,or lvl2
+        """
+        weight = self.get_weight()
+        status = -1
+
+        if weight > self.enc_levels[0]:
+            status += 1
+
+        if weight > self.enc_levels[1]:
+            status += 1
+
+        if weight >= self.enc_levels[2]:
+            status += 1
+
+        return status
+
+    def set_weight(self,amount):
+        if amount < 0:
+            raise ValueError("Negative weight inputed")
+        self.weight = amount
+        self.update()
+
+    def add_weight(self,amount):
+        self.weight += amount
+        self.update()
+
+    def subtract_weight(self,amount):
+        if self.weight >= amount:
+            self.weight -= amount
+        else:
+            raise ValueError("Subtracting more weight than currently present")
+        self.update()
+
+    def get_weight(self):
+        return self.weight
+
+    def get_encumberance_status(self):
+        return self.enc_status
+
+    def get_encumberance_levels(self):
+        return self.enc_levels
+
+

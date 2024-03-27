@@ -34,13 +34,8 @@ from functools import partial
 import pyqt5_Custom_Windows as PYCustomWindows
 import charManagers
 import appHelperTools
-import subPYQTCustom as subPYCustom
 
-LabelFont1 = QFont('Times', 15, QFont.Decorative)
-
-LabelFont2 = QFont('Times', 12, QFont.Decorative)  # Attributes
-LabelFont3 = QFont('Times', 10, QFont.Decorative)  # Skills
-
+import style
 
 
 def create_frame(top_label_str:str, bottom_label_str:str):
@@ -62,7 +57,7 @@ def create_frame(top_label_str:str, bottom_label_str:str):
 def create_top_label(string:str):
     top_label = QLabel()
     top_label.setText(string)
-    top_label.setFont(LabelFont2)
+    top_label.setFont(style.LabelFont2)
     return top_label
 
 
@@ -157,7 +152,7 @@ class StatLayout:
 
         # Label for "Strength, Wisdom, etc"
         top_label = QLabel(attribute.get_type())
-        top_label.setFont(LabelFont2)
+        top_label.setFont(style.LabelFont2)
 
         attribute_layout.addWidget(top_label, alignment=QtCore.Qt.AlignCenter)
         for i in range(len(self.att_labels)):
@@ -173,7 +168,7 @@ class StatLayout:
 
             skill_string += ': ' + sign + str(bonus)
             self.skill_labels += [QCheckBox(skill_string)]
-            self.skill_labels[i].setFont(LabelFont3)
+            self.skill_labels[i].setFont(style.LabelFont3)
             self.skill_labels[i].toggled.connect(partial(self.skill_checked, skills[name], self.skill_labels[i]))
             skill_layout.addWidget(self.skill_labels[i], alignment=(QtCore.Qt.AlignLeft | QtCore.Qt.AlignBottom))
             i += 1
@@ -255,14 +250,15 @@ class RPWidget:
 
         label = QLabel()
         label.setText(self.tp['name'].get_type())
-        label.setFont(LabelFont1)
+        label.setFont(style.LabelFont1)
 
         self.tp_values['name'] = QPushButton()
         self.tp_values['name'].setText(self.tp['name'].get_value())
         self.tp_values['name'].clicked.connect(self.name_window)
 
+
         # self.tp_values['name'].setAutoFillBackground(True)
-        self.tp_values['name'].setStyleSheet('QPushButton {color: white;}')
+        self.tp_values['name'].setStyleSheet(style.TabButtonSheet2)
         # palette = QPalette()
         # palette.setColor(QPalette.WindowText, QColor('red'))
         # self.tp_values['name'].setPalette(palette)
@@ -287,7 +283,7 @@ class RPWidget:
         label = QLabel()
         label.setText(self.tp['class'].get_type() + ' & ' + self.tp['level'].get_type())
         label.setAlignment(QtCore.Qt.AlignCenter)
-        label.setFont(LabelFont1)
+        label.setFont(style.LabelFont1)
 
         self.tp_values['class'] = QLabel()
         self.tp_values['level'] = QLabel()
@@ -321,12 +317,12 @@ class RPWidget:
         label = QLabel()
         label.setText(self.tp['alignment'].get_type())
         label.setAlignment(QtCore.Qt.AlignCenter)
-        label.setFont(LabelFont1)
+        label.setFont(style.LabelFont1)
 
         self.tp_values['alignment'] = QPushButton()
         self.tp_values['alignment'].setText(self.tp['alignment'].get_value())
         self.tp_values['alignment'].clicked.connect(self.alignment_window)
-        self.tp_values['alignment'].setStyleSheet('QPushButton {color: white;}')
+        self.tp_values['alignment'].setStyleSheet(style.TabButtonSheet2)
 
         inner_label_layout.addWidget(label)
         inner_label_layout.addWidget(self.tp_values['alignment'])
@@ -346,7 +342,7 @@ class RPWidget:
         label = QLabel()
         label.setText(self.tp[label_name].get_type())
         label.setAlignment(QtCore.Qt.AlignCenter)
-        label.setFont(LabelFont1)
+        label.setFont(style.LabelFont1)
 
         self.tp_values[label_name] = QLabel()
         self.tp_values[label_name].setAlignment(QtCore.Qt.AlignCenter)
@@ -371,7 +367,6 @@ class RPWidget:
         self.alignment_w.show()
 
 
-
 class MiddleWidget:
     def __init__(self, top:list, middle:list):
         self.tp = top
@@ -381,7 +376,6 @@ class MiddleWidget:
         # Main Widget to be given to app
         self.main_widget = QWidget()
         main_layout = QVBoxLayout(self.main_widget)
-
 
 
         first_layout_outer = QVBoxLayout()
@@ -486,7 +480,7 @@ class MiddleWidget:
 
         top_label = QLabel()
         top_label.setText(self.mdl["death"].get_success_label())
-        top_label.setFont(LabelFont2)
+        top_label.setFont(style.LabelFont2)
 
         self.fcheckboxes = []
         self.wcheckboxes = []
@@ -501,15 +495,6 @@ class MiddleWidget:
             self.wcheckboxes[i].setStyleSheet('QPushButton {background-color: red; color: red;}')
             success_checkbox_layout.addWidget(self.wcheckboxes[i],alignment=QtCore.Qt.AlignCenter)
 
-        # first_layout_outer.addWidget(frame1)
-        # first_layout_outer.addWidget(frame2)
-
-        # self.fcheckboxes[i].setStyleSheet("QCheckBox"
-        #                                   "{"
-        #                                   "background-color: lightblue"
-        #                                   "}" )
-        #                                   # "QCheckBox:hover:checked { color: white }"
-        #                                   # "}")
 
         main_layout.addLayout(first_layout_outer)
 
@@ -567,8 +552,6 @@ class MiddleWidget:
         self.update()
 
 
-
-
 class WeaponWidget:
 
     def __init__(self):
@@ -578,16 +561,18 @@ class WeaponWidget:
         main_layout = QVBoxLayout(self.main_widget )
 
 
-        main_layout.addWidget(appHelperTools.CreateLabel("Attacks and SpellCasting", LabelFont2),
+        main_layout.addWidget(appHelperTools.CreateLabel("Attacks and SpellCasting", style.LabelFont2),
                               alignment=QtCore.Qt.AlignCenter)
 
-        t = "QLabel {background-color: #a2a2a2;color: black}"
         # Grid Layout
         grid_layout = QGridLayout()
         # grid_layout.SetMaximuHeight
-        grid_layout.addWidget(appHelperTools.CreateLabel("Name", LabelFont2, t), 0,0,alignment=QtCore.Qt.AlignCenter)
-        grid_layout.addWidget(appHelperTools.CreateLabel("Attack Bonus", LabelFont2, t), 0, 1,alignment=QtCore.Qt.AlignCenter)
-        grid_layout.addWidget(appHelperTools.CreateLabel("Damage/Type", LabelFont2, t), 0, 2,1,2,alignment=QtCore.Qt.AlignCenter)
+        grid_layout.addWidget(appHelperTools.CreateLabel("Name", style.LabelFont2, style.DarkGreyLabel),
+                              0,0,alignment=QtCore.Qt.AlignCenter)
+        grid_layout.addWidget(appHelperTools.CreateLabel("Attack Bonus", style.LabelFont2, style.DarkGreyLabel),
+                              0, 1,alignment=QtCore.Qt.AlignCenter)
+        grid_layout.addWidget(appHelperTools.CreateLabel("Damage/Type", style.LabelFont2, style.DarkGreyLabel), 0,
+                              2,1,2,alignment=QtCore.Qt.AlignCenter)
 
 
         main_layout.addLayout(grid_layout)
@@ -678,7 +663,7 @@ class RPTraitWidget:
         textbox = trait_box(text, font, partial(self.save_text))
 
         label = QLabel()
-        label.setFont(LabelFont2)
+        label.setFont(style.LabelFont2)
         label.setText(label_input)
 
         layout.addWidget(textbox)
@@ -707,7 +692,6 @@ class InventoryWidget:
 
         money_text = ["CP", "SP","EP","GP","PP"]
 
-
         self.tinventory = tinventory
         money_value = self.tinventory.get_money()
 
@@ -715,14 +699,15 @@ class InventoryWidget:
         for i in range(5):
             money_layout.addWidget(appHelperTools.CreateSeperator(), 0, i)
 
+        """Money___________________________________________________________________"""
         self.widgets["currency_amounts"] = []
         for i in range(1,2*len(money_text)+1,2):
             # CURRENTY DENOMINATION LABELS
-            money_layout.addWidget(appHelperTools.CreateLabel(money_text[int(i / 2)], LabelFont1, money_style), i, 1)
+            money_layout.addWidget(appHelperTools.CreateLabel(money_text[int(i / 2)], style.LabelFont1, money_style), i, 1)
             money_layout.addWidget(appHelperTools.CreateSeperator(), i + 1, 1)
 
             # CURRENCY AMOUNT LABELS
-            self.widgets["currency_amounts"] += [appHelperTools.CreateLabel(str(money_value[int(i / 2)]), LabelFont1, money_style)]
+            self.widgets["currency_amounts"] += [appHelperTools.CreateLabel(str(money_value[int(i / 2)]), style.LabelFont1, money_style)]
             money_layout.addWidget(self.widgets["currency_amounts"][int(i/2)], i, 3)
             money_layout.addWidget(appHelperTools.CreateSeperator(), i + 1, 3)
             # V SEPERATORS
@@ -734,33 +719,130 @@ class InventoryWidget:
             money_layout.addWidget(appHelperTools.CreateVSeperator(), i, 4)
             money_layout.addWidget(appHelperTools.CreateVSeperator(), i + 1, 4)
 
-        # Inventory Options________________________________________________________
+        """Inventory Stats_______________________________________________________"""
+
+        inventory_status_widget = QFrame()
+        inventory_status_layout = QVBoxLayout(inventory_status_widget)
+        inventory_status_widget.setFrameShape(QFrame.WinPanel)
+
+        encumberance_widget = QFrame()
+        encumberance_widget.setFrameShape(QFrame.Panel)
+        encumberance_layout = QVBoxLayout(encumberance_widget)
+
+        encumberance_layout.addWidget(appHelperTools.CreateLabel("Encumberance",style.LabelFont1),stretch=1)
+
+        self.encumberance_label = appHelperTools.EncumberanceLabel(self.tinventory.encumberance)
+        self.encumberance_label.add_bars()
+        encumberance_layout.addWidget(self.encumberance_label,stretch=3)
+        inventory_status_layout.addWidget(encumberance_widget)
+
+        """ Inventory Options________________________________________________________"""
 
         inventory_options_widget = QFrame()
         inventory_options_layout = QVBoxLayout(inventory_options_widget)
         inventory_options_widget.setFrameShape(QFrame.WinPanel)
 
+        sorting_widget = QFrame()
+        sorting_widget.setFrameShape(QFrame.Panel)
+        sorting_layout = QVBoxLayout(sorting_widget)
+        sorting_layout.addWidget(appHelperTools.CreateLabel("Sorting",style.LabelFont1))
+
+        inventory_options_layout.addWidget(sorting_widget)
+
+        # Sorting buttons__________
+        sorting_button_style = style.TabButtonSheet2
+        alpha = appHelperTools.CreateGenButton("Alphabetical",style.LabelFont2,
+                                               sorting_button_style,partial(self.change_order,"name"))
+        weight = appHelperTools.CreateGenButton("Weight", style.LabelFont2,
+                                                sorting_button_style,partial(self.change_order,"weight"))
+        typet = appHelperTools.CreateGenButton("Category", style.LabelFont2,
+                                               sorting_button_style,partial(self.change_order,"type"))
+        cost = appHelperTools.CreateGenButton("Cost", style.LabelFont2,
+                                              sorting_button_style,partial(self.change_order,"cost"))
+        amount = appHelperTools.CreateGenButton("Amount", style.LabelFont2,
+                                                sorting_button_style,partial(self.change_order, "amount"))
+        reversal = appHelperTools.CreateGenButton("Reverse", style.LabelFont2,
+                                                  sorting_button_style,partial(self.reverse_order))
+
+        sorting_layout.addWidget(alpha)
+        sorting_layout.addWidget(typet)
+        sorting_layout.addWidget(amount)
+        sorting_layout.addWidget(cost)
+        sorting_layout.addWidget(weight)
+        sorting_layout.addWidget(reversal)
+
+        """Inventory Proper___________________________________________"""
         inventory_proper_widget = QFrame()
         inventory_proper_layout = QHBoxLayout(inventory_proper_widget)
         inventory_proper_widget.setFrameShape(QFrame.Box)
 
+        self.stacked_proper = QStackedLayout()
+        inventory_proper_layout.addLayout(self.stacked_proper)
+
+        self.create_item_labels()
+
+        """Layout Adding____________________________________________"""
 
         top_sub_layout.addLayout(money_layout,stretch=1)
+        top_sub_layout.addWidget(inventory_status_widget, stretch=2)
         top_sub_layout.addWidget(inventory_options_widget, stretch=2)
+
         inventory_layout.addLayout(top_sub_layout, stretch=1)
         inventory_layout.addWidget(inventory_proper_widget, stretch=3)
 
         # Inventory ________________________________________________________
-        self.left_inventory_layout = QGridLayout()
-        self.right_inventory_layout = QGridLayout()
 
+    def encumberance_label(self):
+        pass
 
-        inventory_proper_layout.addLayout(self.left_inventory_layout)
-        inventory_proper_layout.addLayout(self.right_inventory_layout)
+    def switch_tab(self, index: int):
+        self.stacked_proper.setCurrentIndex(index)
 
+    def make_stacked_layout(self):
+        items = self.tinventory.get_all_items()
 
+        num_of_items = len(items)
+        num_per_column = 10
+        num_of_pages = int(np.ceil(num_of_items / (num_per_column * 2)))
 
-        self.create_item_labels()
+        j = 0
+        for i in range(num_of_pages):
+            # Each page list items in range -> [i*16,i*16 + 16)
+
+            current_page_widget = QWidget()
+            current_page_outer0_layout = QVBoxLayout()
+
+            current_page_outer1_layout = QHBoxLayout()
+            current_page_left_layout = QGridLayout()
+            current_page_right_layout = QGridLayout()
+            current_page_button_layout = QHBoxLayout()
+
+            current_page_widget.setLayout(current_page_outer0_layout)
+            current_page_outer0_layout.addLayout(current_page_outer1_layout)
+            current_page_outer0_layout.addLayout(current_page_button_layout)
+            current_page_outer1_layout.addLayout(current_page_left_layout)
+            current_page_outer1_layout.addLayout(current_page_right_layout)
+
+            # left_layout = QGridLayout()
+            for k in range(num_per_column):
+                if j < num_of_items:
+                    current_page_left_layout.addWidget(appHelperTools.ItemLabel(items[j], style.LabelFont2), k, 0)
+                    j += 1
+
+            for k in range(num_per_column):
+                if j < num_of_items:
+                    current_page_right_layout.addWidget(appHelperTools.ItemLabel(items[j], style.LabelFont2), k, 0)
+                    j += 1
+
+            if i > 0:
+                left_button = appHelperTools.CreateTabButton(self.switch_tab, i - 1, style.LabelFont2, style.TabButtonSheet1, "<-")
+                current_page_button_layout.addWidget(left_button,alignment=QtCore.Qt.AlignBottom)
+
+            if i < num_of_pages - 1:
+                right_button = appHelperTools.CreateTabButton(self.switch_tab, i + 1, style.LabelFont2, style.TabButtonSheet1, "->")
+                current_page_button_layout.addWidget(right_button,alignment=QtCore.Qt.AlignBottom)
+
+            self.stacked_proper.addWidget(current_page_widget)
 
     def get_widget(self):
         return self.main_widget
@@ -770,25 +852,34 @@ class InventoryWidget:
         for i in range(len(self.widgets["currency_amounts"])):
             self.widgets["currency_amounts"][i].setText(str(money_value[i]))
         self.create_item_labels()
+        self.encumberance_label.update()
 
-    def create_item_labels(self, order="alphabetical", reverse=False):
-        items = self.tinventory.get_all_items(order, reverse)
-        halfway = int(len(items) / 2)
+    def change_order(self,order:str):
+        self.tinventory.set_sorting(order)
+        self.update()
 
-        k = 0
-        for i in range(0,halfway):
-            self.left_inventory_layout.addWidget(subPYCustom.ItemLabel(items[i], LabelFont2), i, 0)
-            k += 1
+    def reverse_order(self):
 
-        self.left_inventory_layout.setRowStretch(k + 2, 1)
+        if not self.tinventory.reverse:
+            self.tinventory.set_reversal(True)
 
+        else:
+            self.tinventory.set_reversal(False)
+        self.update()
 
-        k = 0
-        for i in range(halfway,len(items)):
-            self.right_inventory_layout.addWidget(subPYCustom.ItemLabel(items[i], LabelFont2), k, 0)
-            k += 1
+    def create_item_labels(self):
+        self.deleteItemsOfLayout(self.stacked_proper)
+        self.make_stacked_layout()
 
-        self.right_inventory_layout.setRowStretch(k + 2, 1)
+    def deleteItemsOfLayout(self,layout):
+        if layout is not None:
+            while layout.count():
+                item = layout.takeAt(0)
+                widget = item.widget()
+                if widget is not None:
+                    widget.setParent(None)
+                else:
+                    layout.deleteItemsOfLayout(item.layout())
 
 
 

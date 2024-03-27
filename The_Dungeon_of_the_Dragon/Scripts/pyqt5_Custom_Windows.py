@@ -28,6 +28,8 @@ import qdarktheme
 import ruleTools as DT
 from functools import partial
 
+from Scripts import style
+
 
 class NameWindow(QWidget):
 
@@ -74,6 +76,7 @@ class AlignmentWindow(QWidget):
             for j in range(3):
                 this_row += [QPushButton()]
                 this_row[j].setText(self.alignment_labels[i][j])
+                this_row[j].setStyleSheet(style.TabButtonSheet2)
                 mainLayout.addWidget(this_row[j], i, j)
                 this_row[j].clicked.connect(partial(self.alignment_change,(i,j)))
             self.buttons += this_row

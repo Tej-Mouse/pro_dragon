@@ -9,13 +9,13 @@ def parseWeaponLine(weaponClass, text):
     name = text[0]
     name = name.replace("_", " ")
     cost = text[1].split("_")
-    cost = (cost[0], cost[1])
+    cost = (float(cost[0]), cost[1])
     damage = text[2].split("d")
     damage = (int(damage[0]), int(damage[1]))
     damage_type = text[3]
     weight = float(Fraction(text[4]))
     properties = text[5].split("-")
-    weapon = objectsDnD.Weapon(name, weight,cost,damage,damage_type, properties,weaponClass)
+    weapon = objectsDnD.Weapon(name,weight,cost,damage,damage_type,properties,weaponClass)
     return weapon
 
 
