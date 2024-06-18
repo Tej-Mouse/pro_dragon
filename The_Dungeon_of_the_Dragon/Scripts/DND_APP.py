@@ -25,7 +25,6 @@ import appHelperTools as aHT
 from Scripts import objectsDnD, Reading, EZPaths
 import style
 
-# style.SubButtonSheet1 = ""
 
 class DnDWindow(QMainWindow):
 
@@ -168,29 +167,30 @@ class DnDWindow(QMainWindow):
         # options_widget.addLayout(options_layout)
 
     def test(self):
-        self.tcharecter.alter_attribute('prof','starter_level',
-                                        self.tcharecter.get_specific_attribute('prof').get_total_base() + 3)
+        # self.tcharecter.alter_attribute('prof','starter_level',
+        #                                 self.tcharecter.get_specific_attribute('prof').get_total_base() + 3)
+        self.tcharecter.alter_attribute('str','starter_level',800)
         self.tcharecter.alter_attribute('chr', 'starter_level', 8)
         self.tcharecter.alter_attribute('dex', 'starter_level',
                                         self.tcharecter.get_specific_attribute('dex').get_total_base() + 3)
-        self.tcharecter.get_specific_skills('sleight').give_expertise()
-        self.tcharecter.get_specific_top('name').set('Lucas Cyr')
-        self.tcharecter.get_specific_top('class').set('Killer')
-        self.tcharecter.get_specific_top('alignment').set('Neutral Evil')
-        self.tcharecter.get_specific_top('race').set('Other Kin')
-        self.tcharecter.get_specific_top('background').set('France')
-        self.tcharecter.get_specific_top('level').add(1000)
-        self.tcharecter.get_specific_top('experience').add(1000)
-        self.tcharecter.get_specific_mid_top('ac').alter_contrib_base("foo", 18)
-        self.tcharecter.get_specific_mid_mid('death').mark_failure()
-        self.tcharecter.get_specific_mid_mid('hd').set_total_hd(10)
-        self.tcharecter.get_specific_mid_mid('hd').set_d_type(10)
-        self.tcharecter.get_specific_mid_top('mhp').alter_contrib_base("god",1000000)
-        self.tcharecter.get_specific_mid_top('chp').alter_contrib_base("god", 1000000)
-        self.tcharecter.get_specific_rp_traits('ideals').set_text("Man, you don't wanna know")
+        # self.tcharecter.get_specific_skills('sleight').give_expertise()
+        # self.tcharecter.get_specific_top('name').set('Lucas Cyr')
+        # self.tcharecter.get_specific_top('class').set('Killer')
+        # self.tcharecter.get_specific_top('alignment').set('Neutral Evil')
+        # self.tcharecter.get_specific_top('race').set('Other Kin')
+        # self.tcharecter.get_specific_top('background').set('France')
+        # self.tcharecter.get_specific_top('level').add(1000)
+        # self.tcharecter.get_specific_top('experience').add(1000)
+        # self.tcharecter.get_specific_mid_top('ac').alter_contrib_base("foo", 18)
+        # self.tcharecter.get_specific_mid_mid('death').mark_failure()
+        # self.tcharecter.get_specific_mid_mid('hd').set_total_hd(10)
+        # self.tcharecter.get_specific_mid_mid('hd').set_d_type(10)
+        # self.tcharecter.get_specific_mid_top('mhp').alter_contrib_base("god",1000000)
+        # self.tcharecter.get_specific_mid_top('chp').alter_contrib_base("god", 1000000)
+        # self.tcharecter.get_specific_rp_traits('ideals').set_text("Man, you don't wanna know")
 
         inventory = self.tcharecter.get_inventory()
-        apple = objectsDnD.Item("Apple", 1, category="Food")
+        apple = objectsDnD.Item("Apple", 100, category="Food")
         pear = objectsDnD.Item("Pear", 1)
         ear = objectsDnD.Item("Ear", 10, cost=(100, "gp"))
         sword = objectsDnD.Weapon("Sword", 10, (10000, "gp"), (1, 4),
@@ -206,28 +206,28 @@ class DnDWindow(QMainWindow):
         list_weapons = testWeapons.get_all_weapons()
         for i in range(len(list_weapons)):
             inventory.add_item(list_weapons[i].get_key_name(), list_weapons[i], i+1)
-        self.update()
-        # self.tcharecter.alter_attribute('prof', 'starter_level',
-        #                                 self.tcharecter.get_specific_attribute('prof').get_total_base() + 3)
-        # self.tcharecter.alter_attribute('chr', 'starter_level', 8)
-        # self.tcharecter.alter_attribute('dex', 'starter_level',
-        #                                 self.tcharecter.get_specific_attribute('dex').get_total_base() + 3)
-        # self.tcharecter.get_specific_skills('sleight').give_expertise()
-        # self.tcharecter.get_specific_top('name').set('Christopher "Terror" Clark')
-        # self.tcharecter.get_specific_top('class').set('Killer')
-        # self.tcharecter.get_specific_top('alignment').set('True Evil')
-        # self.tcharecter.get_specific_top('race').set('Beyond Comprehension')
-        # self.tcharecter.get_specific_top('background').set('Cracker Barrel')
-        # self.tcharecter.get_specific_top('level').add(1000)
-        # self.tcharecter.get_specific_top('experience').add(1000)
-        # self.tcharecter.get_specific_mid_top('ac').alter_contrib_base("foo", 20)
-        # self.tcharecter.get_specific_mid_mid('death').mark_failure()
-        # self.tcharecter.get_specific_mid_mid('hd').set_total_hd(10)
-        # self.tcharecter.get_specific_mid_mid('hd').set_d_type(10)
-        # self.tcharecter.get_specific_mid_top('mhp').alter_contrib_base("god", 1000000)
-        # self.tcharecter.get_specific_mid_top('chp').alter_contrib_base("god", 1000000)
-        # self.tcharecter.get_specific_rp_traits('ideals').set_text("Man, you don't wanna know")
         # self.update()
+        self.tcharecter.alter_attribute('prof', 'starter_level',
+                                        self.tcharecter.get_specific_attribute('prof').get_total_base() + 3)
+        self.tcharecter.alter_attribute('chr', 'starter_level', 8)
+        self.tcharecter.alter_attribute('dex', 'starter_level',
+                                        self.tcharecter.get_specific_attribute('dex').get_total_base() + 3)
+        self.tcharecter.get_specific_skills('sleight').give_expertise()
+        self.tcharecter.get_specific_top('name').set('Christopher "Terror" Clark')
+        self.tcharecter.get_specific_top('class').set('Killer')
+        self.tcharecter.get_specific_top('alignment').set('True Evil')
+        self.tcharecter.get_specific_top('race').set('Beyond Comprehension')
+        self.tcharecter.get_specific_top('background').set('Cracker Barrel')
+        self.tcharecter.get_specific_top('level').add(1000)
+        self.tcharecter.get_specific_top('experience').add(1000)
+        self.tcharecter.get_specific_mid_top('ac').alter_contrib_base("foo", 20)
+        self.tcharecter.get_specific_mid_mid('death').mark_failure()
+        self.tcharecter.get_specific_mid_mid('hd').set_total_hd(10)
+        self.tcharecter.get_specific_mid_mid('hd').set_d_type(10)
+        self.tcharecter.get_specific_mid_top('mhp').alter_contrib_base("god", 1000000)
+        self.tcharecter.get_specific_mid_top('chp').alter_contrib_base("god", 1000000)
+        self.tcharecter.get_specific_rp_traits('ideals').set_text("Man, you don't wanna know")
+        self.update()
 
     def update(self):
         self.attribute_labels.update()

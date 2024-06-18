@@ -29,6 +29,8 @@ from PyQt5.QtCore import (
 )
 from PyQt5 import QtCore, Qt
 import qdarktheme
+from PyQt5.sip import delete
+
 import ruleTools
 from functools import partial
 import pyqt5_Custom_Windows as PYCustomWindows
@@ -729,10 +731,24 @@ class InventoryWidget:
         encumberance_widget.setFrameShape(QFrame.Panel)
         encumberance_layout = QVBoxLayout(encumberance_widget)
 
-        encumberance_layout.addWidget(appHelperTools.CreateLabel("Encumberance",style.LabelFont1),stretch=1)
+        encumberance_status_layout = QHBoxLayout()
+        encumberance_status_label0 = appHelperTools.CreateLabel(
+            "Weight: ",style.LabelFontSmallBold)
+        self.encumberance_status_label1 = appHelperTools.CreateLabel(
+            self.tinventory.encumberance.get_encumberance_word_status(),style.LabelFontBigBold)
+        encumberance_status_label0.setMaximumHeight(25)
+        encumberance_status_label0.setMaximumWidth(70)
+        self.encumberance_status_label1.setMaximumHeight(25)
+        self.encumberance_status_label1.setMaximumWidth(400)
 
-        self.encumberance_label = appHelperTools.EncumberanceLabel(self.tinventory.encumberance)
-        self.encumberance_label.add_bars()
+        encumberance_status_layout.addWidget(encumberance_status_label0,stretch=1,alignment=QtCore.Qt.AlignLeft)
+        encumberance_status_layout.addWidget(self.encumberance_status_label1,stretch=4,alignment=QtCore.Qt.AlignLeft)
+        encumberance_status_layout.setContentsMargins(0, 0, 0, 0)
+
+        # self.encumberance_status_label.setMaximumHeight(20)
+        encumberance_layout.addLayout(encumberance_status_layout,stretch=1)
+
+        self.encumberance_label = EncumberanceLabel(self.tinventory.encumberance)
         encumberance_layout.addWidget(self.encumberance_label,stretch=3)
         inventory_status_layout.addWidget(encumberance_widget)
 
@@ -773,11 +789,13 @@ class InventoryWidget:
 
         """Inventory Proper___________________________________________"""
         inventory_proper_widget = QFrame()
-        inventory_proper_layout = QHBoxLayout(inventory_proper_widget)
+        inventory_proper_layout = QVBoxLayout(inventory_proper_widget)
         inventory_proper_widget.setFrameShape(QFrame.Box)
 
         self.stacked_proper = QStackedLayout()
+        self.stacked_proper.setAlignment(QtCore.Qt.AlignTop)
         inventory_proper_layout.addLayout(self.stacked_proper)
+
 
         self.create_item_labels()
 
@@ -791,9 +809,6 @@ class InventoryWidget:
         inventory_layout.addWidget(inventory_proper_widget, stretch=3)
 
         # Inventory ________________________________________________________
-
-    def encumberance_label(self):
-        pass
 
     def switch_tab(self, index: int):
         self.stacked_proper.setCurrentIndex(index)
@@ -826,12 +841,12 @@ class InventoryWidget:
             # left_layout = QGridLayout()
             for k in range(num_per_column):
                 if j < num_of_items:
-                    current_page_left_layout.addWidget(appHelperTools.ItemLabel(items[j], style.LabelFont2), k, 0)
+                    current_page_left_layout.addWidget(appHelperTools.ItemLabel(self.tinventory,items[j]), k, 0)
                     j += 1
 
             for k in range(num_per_column):
                 if j < num_of_items:
-                    current_page_right_layout.addWidget(appHelperTools.ItemLabel(items[j], style.LabelFont2), k, 0)
+                    current_page_right_layout.addWidget(appHelperTools.ItemLabel(self.tinventory,items[j]), k, 0)
                     j += 1
 
             if i > 0:
@@ -842,6 +857,8 @@ class InventoryWidget:
                 right_button = appHelperTools.CreateTabButton(self.switch_tab, i + 1, style.LabelFont2, style.TabButtonSheet1, "->")
                 current_page_button_layout.addWidget(right_button,alignment=QtCore.Qt.AlignBottom)
 
+            # current_page_outer0_layout.setAlignment(QtCore.Qt.AlignTop)
+            # current_page_outer1_layout.setAlignment(QtCore.Qt.AlignTop)
             self.stacked_proper.addWidget(current_page_widget)
 
     def get_widget(self):
@@ -853,6 +870,7 @@ class InventoryWidget:
             self.widgets["currency_amounts"][i].setText(str(money_value[i]))
         self.create_item_labels()
         self.encumberance_label.update()
+        self.encumberance_status_label1.setText(self.tinventory.encumberance.get_encumberance_word_status())
 
     def change_order(self,order:str):
         self.tinventory.set_sorting(order)
@@ -868,20 +886,111 @@ class InventoryWidget:
         self.update()
 
     def create_item_labels(self):
-        self.deleteItemsOfLayout(self.stacked_proper)
+        appHelperTools.deleteItemsOfLayout(self.stacked_proper)
         self.make_stacked_layout()
 
-    def deleteItemsOfLayout(self,layout):
-        if layout is not None:
-            while layout.count():
-                item = layout.takeAt(0)
-                widget = item.widget()
-                if widget is not None:
-                    widget.setParent(None)
-                else:
-                    layout.deleteItemsOfLayout(item.layout())
+
+class EncumberanceLabel(QFrame):
+
+    num_of_bars =15
+
+    def __init__(self, encumberance:ruleTools.Encumbrance):
+        super().__init__()
+        self.layout = QVBoxLayout(self)
+        self.setFrameShape(QFrame.Panel)
+        self.encumberance = encumberance
+        self.create_bar_widget()
+
+    def create_bar_widget(self):
+        frame = QFrame()
+        frame.setFrameShape(QFrame.StyledPanel)
+
+        bar_layout = QGridLayout(frame)
+
+        set_points = self.encumberance.get_encumberance_levels()
+        max_weight = set_points[2]
+        if max_weight == 0:
+            max_weight = 1
+        lvl2 = int(self.num_of_bars - 1)   # minus for 0 index
+        lvl1 = int((set_points[1] / max_weight) * self.num_of_bars) - 1
+        lvl0 = int((set_points[0] / max_weight) * self.num_of_bars) - 1
+
+        fill_color = ["gainsboro","palegoldenrod","sandybrown","indianred"]
+        past_bar = [False,False,False,False]
+        current_weight = self.encumberance.get_weight()
+        if current_weight >= max_weight:
+            current_weight_bar = lvl2
+            # current_weight_bar = int((current_weight / max_weight) * self.num_of_bars)
+            # print(current_weight_bar)
+            # print(lvl2)
+        else:
+            current_weight_bar = int((current_weight / max_weight) * self.num_of_bars)
+
+        k = self.num_of_bars - 1
+        current_level = 0
+        weight_style = style.LabelFont2
+        for i in range(self.num_of_bars):
+            if i == lvl0 and not past_bar[0]:
+                current_level += 1
+                past_bar[0] = True
+                current_weight_marker = appHelperTools.CreateLabel(str(set_points[0]) + " lbs-", weight_style)
+                policy = current_weight_marker.sizePolicy()
+                policy.setVerticalPolicy(policy.Policy.Maximum)
+                policy.setHorizontalPolicy(policy.Policy.Maximum)
+                current_weight_marker.setSizePolicy(policy)
+                bar_layout.addWidget(current_weight_marker, k, 0)
+
+            if i == lvl1 and not past_bar[1]:
+                current_level += 1
+                past_bar[1] = True
+                current_weight_marker = appHelperTools.CreateLabel(str(set_points[1]) + " lbs-", weight_style)
+                policy = current_weight_marker.sizePolicy()
+                policy.setVerticalPolicy(policy.Policy.Maximum)
+                policy.setHorizontalPolicy(policy.Policy.Maximum)
+                current_weight_marker.setSizePolicy(policy)
+                bar_layout.addWidget(current_weight_marker, k, 0)
+
+            if i == lvl2 and not past_bar[2]:
+                current_level += 1
+                past_bar[2] = True
+                current_weight_marker = appHelperTools.CreateLabel(str(set_points[2]) + " lbs-", weight_style)
+                policy = current_weight_marker.sizePolicy()
+                policy.setVerticalPolicy(policy.Policy.Maximum)
+                policy.setHorizontalPolicy(policy.Policy.Maximum)
+                current_weight_marker.setSizePolicy(policy)
+                bar_layout.addWidget(current_weight_marker, k, 0)
+
+            if i <= current_weight_bar:
+                color = fill_color[current_level]
+                opacity = .7
+            else:
+                color = fill_color[current_level]
+                opacity = .2
+
+            if i == current_weight_bar:
+                current_weight_marker = appHelperTools.CreateLabel("-" + str(current_weight) + "lbs", style.LabelFont2)
+                policy = current_weight_marker.sizePolicy()
+                policy.setVerticalPolicy(policy.Policy.Maximum)
+                policy.setHorizontalPolicy(policy.Policy.Maximum)
+                current_weight_marker.setSizePolicy(policy)
+                bar_layout.addWidget(current_weight_marker, k, 2)
 
 
+            bar = appHelperTools.MakeColorWidget(color,opacity)
+
+            bar_layout.addWidget(bar,k,1)
+            k -= 1
+
+        bar_layout.setContentsMargins(0, 0, 0, 0)
+        bar_layout.setSpacing(1)
+
+        self.layout.addWidget(frame)
+
+    def update(self):
+        appHelperTools.deleteItemsOfLayout(self.layout)
+        delete(self.layout)
+        self.layout = QVBoxLayout(self)
+        self.create_bar_widget()
 
 
 

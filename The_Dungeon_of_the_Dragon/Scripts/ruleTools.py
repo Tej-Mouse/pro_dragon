@@ -394,7 +394,7 @@ class RPTraits:
         self.text = text
 
 
-class Encumberance:
+class Encumbrance:
 
     def __init__(self,str_score:Stat):
         self.weight = 0
@@ -406,6 +406,9 @@ class Encumberance:
             'lvl2': 15  # max
         }
         self.enc_levels = self.calculate_encumberence_levels()
+
+        self.encum_word_status_array = ["Unencumbered", "Encumbered","Heavily Encumbered", "Max Load"]
+        self.encum_word_status = self.encum_word_status_array[self.enc_status + 1]
 
     def set_encumberance_level_multiplier(self,lvl:int, multiplier:float):
         """
@@ -419,14 +422,13 @@ class Encumberance:
 
     def update(self):
         self.enc_levels = self.calculate_encumberence_levels()
-        self.enc_status = self.calculate_encumberence_status()
+        self.enc_status, self.encum_word_status = self.calculate_encumberence_status()
 
     def calculate_encumberence_levels(self):
         """
         :return: Encumberence levels in list [lvl0,lvl1,lvl2]
         """
         str_score = self.str_score.get_total_base()
-        print(str_score)
         return [self.enc_levels_multipliers['lvl0'] * str_score,
                 self.enc_levels_multipliers['lvl1'] * str_score,
                 self.enc_levels_multipliers['lvl2'] * str_score]
@@ -446,8 +448,7 @@ class Encumberance:
 
         if weight >= self.enc_levels[2]:
             status += 1
-
-        return status
+        return status, self.encum_word_status_array[status + 1]
 
     def set_weight(self,amount):
         if amount < 0:
@@ -471,6 +472,9 @@ class Encumberance:
 
     def get_encumberance_status(self):
         return self.enc_status
+
+    def get_encumberance_word_status(self):
+        return self.encum_word_status
 
     def get_encumberance_levels(self):
         return self.enc_levels

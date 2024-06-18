@@ -144,7 +144,7 @@ class CharacterSheet:
         }
 
         """ Beyond Stats_____"""
-        self.encumberance = ruleTools.Encumberance(self.AbS['str'])
+        self.encumberance = ruleTools.Encumbrance(self.AbS['str'])
         self.inventory = charManagers.Inventory(self.encumberance)
 
 

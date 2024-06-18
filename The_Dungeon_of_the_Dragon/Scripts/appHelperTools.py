@@ -12,37 +12,65 @@ from PyQt5.QtWidgets import (
     QLabel,
     QPushButton,
     QScrollArea,
-    QFrame
+    QFrame, QGraphicsOpacityEffect, QLineEdit, QSpinBox
 )
-from PyQt5.QtGui import QPalette, QColor, QFont
+from PyQt5.QtGui import QPalette, QColor, QFont, QIcon
 from PyQt5 import QtCore, Qt
 import qdarktheme
 from functools import partial
 
 from PyQt5.sip import delete
 
-from Scripts import objectsDnD, style, charManagers, ruleTools
+from Scripts import objectsDnD, style, charManagers, ruleTools, imageURLS
 
 
-def CreateTabButton(switch_tab_function, tab_value:int, label_font, style_sheet:str, label:str):
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+
+def CreateTabButton(switch_tab_function, tab_value: int, label_font, style_sheet: str, label: str):
     tab_button = QPushButton()
     tab_button.setText(label)
     tab_button.clicked.connect(partial(switch_tab_function, tab_value))
     tab_button.setFont(label_font)
-    tab_button.setStyleSheet( style_sheet)
+    tab_button.setStyleSheet(style_sheet)
     return tab_button
 
 
-def CreateGenButton(text, font, stylesheet, function, minWidth=None, minHeight=None):
+def CreateGenButton(text=None, font=None, stylesheet=None, function=None,function_list=None, minWidth=None,
+                    minHeight=None, icon_url=None, icon_size: QIcon = None):
     button = QPushButton()
-    button.setText(text)
-    button.setFont(font)
-    button.setStyleSheet(stylesheet)
+    if text is not None:
+        button.setText(text)
+
+    if font is not None:
+        button.setFont(font)
+
+    if stylesheet is not None:
+        button.setStyleSheet(stylesheet)
+
     if minHeight is not None:
         button.setMinimumHeight(minHeight)
+
     if minWidth is not None:
         button.setMinimumWidth(minWidth)
-    button.clicked.connect(function)
+
+    if function is not None:
+        button.clicked.connect(function)
+
+    if icon_url is not None:
+        button.setIcon(QIcon(icon_url))
+        if icon_size is not None:
+            button.setIconSize(icon_size)
+
+    if function_list is not None:
+        for i in range(len(function_list)):
+            button.clicked.connect(function_list[i])
+
     return button
 
 
@@ -58,7 +86,7 @@ def CreateVSeperator():
     return separator
 
 
-def CreateLabel(text:str, font:QFont, style_sheet=None):
+def CreateLabel(text: str, font: QFont, style_sheet=None):
     label = QLabel()
     label.setText(text)
     label.setFont(font)
@@ -68,22 +96,88 @@ def CreateLabel(text:str, font:QFont, style_sheet=None):
     return label
 
 
+def deleteItemsOfLayout(layout):
+    if layout is not None:
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+            else:
+                deleteItemsOfLayout(item.layout())
+
+
 class ItemLabel(QFrame):
 
-    def __init__(self, item:objectsDnD.Item, font:QFont):
+    def __init__(self,tinventory:charManagers.Inventory,item: objectsDnD.Item):
         super().__init__()
-        self.layout = QVBoxLayout(self)
+        self.tinventory = tinventory
+        self.layout = QHBoxLayout(self)
         self.setFrameShape(QFrame.Panel)
         # self.setMaximumSize(100,50)
         self.item = item
         self.text_label = QLabel()
-        self.text_label.setFont(style.ItemLabelFont)
-        self.text_label.setText(self.create_text())
-        self.text_label.setStyleSheet(style.GreyLabel)
-        self.layout.addWidget(self.text_label)
+        self.button_layout = QHBoxLayout()
+
+        self.default_state_creation()
         # self.setMaximumWidth(300)
         self.setFixedHeight(80)
         self.setStyleSheet(style.ItemFrame)
+        self.edit_button_layout = None
+
+    def default_state_creation(self):
+        self.text_label.setFont(style.ItemLabelFont)
+        self.text_label.setText(self.create_text())
+        self.text_label.setStyleSheet(style.GreyLabel)
+        self.layout.addWidget(self.text_label, stretch=3)
+        self.layout.addLayout(self.button_layout)
+        self.create_button_layout()
+
+    def add_amount(self):
+        self.clear_button_layout()
+        line_edit = QSpinBox()
+        # line_edit.setPlaceholderText("Enter a number")
+        line_edit.setMaximumWidth(300)
+        widget_for_info = {
+            'addAmount': line_edit
+        }
+        line_edit.editings.connect(partial(self.create_confirm_button,'add',widget_for_info))
+        oldfunc = line_edit.keyPressEvent
+        line_edit.keyPressEvent = partial(self.LinekeyPressEvent,oldfunc)
+
+        self.edit_button_layout = QHBoxLayout()
+        self.button_layout.addWidget(line_edit)
+        self.button_layout.addLayout(self.edit_button_layout)
+        # self.create_confirm_button('add',widget_for_info)
+
+        self.layout.addLayout(self.button_layout)
+
+    def LinekeyPressEvent(self,func,QKeyEvent):
+        func(QKeyEvent)
+
+    def create_cancel_button(self):
+        pass
+
+    def create_confirm_button(self,function_string:str,suplimentary:dict=None):
+        deleteItemsOfLayout(self.edit_button_layout)
+        self.edit_button_layout = QHBoxLayout()
+        if function_string == 'add':
+            amount = suplimentary['addAmount'].text()
+            if is_number(amount):
+                function = partial(self.item.add_amount,int(amount))
+                button = CreateGenButton(
+                    stylesheet=style.ItemEditButton,
+                    icon_url=imageURLS.CheckUrl,
+                    icon_size=QtCore.QSize(20, 20),
+                    function_list=[function,partial(self.refresh_button_layout)]
+                                         )
+                self.edit_button_layout.addWidget(button)
+                # self.edit_button_layout.addWidget(QLineEdit())
+                self.button_layout.addLayout(self.edit_button_layout)
+
+            else:
+                self.add_amount()
+
 
     def create_text(self):
         text = ''
@@ -96,97 +190,55 @@ class ItemLabel(QFrame):
         text += str(self.item.get_cost()[0]) + " " + self.item.get_cost()[1]
         return text
 
-    def update(self):
-        self.setText(self.create_text())
+    def clear_button_layout(self):
+        self.text_label.deleteLater()
+        self.text_label = QLabel()
+        deleteItemsOfLayout(self.button_layout)
+        self.button_layout = QHBoxLayout()
 
+    def refresh_button_layout(self):
+        self.text_label.deleteLater()
+        self.text_label = QLabel()
+        deleteItemsOfLayout(self.button_layout)
+        self.button_layout = QHBoxLayout()
+        self.default_state_creation()
 
-class EncumberanceLabel(QFrame):
+    def create_button_layout(self):
+        edit_button = CreateGenButton(stylesheet=style.ItemEditButton,
+                                           icon_url=imageURLS.IconUrl, icon_size=QtCore.QSize(20, 20))
 
-    num_of_bars = 15
+        add_button = CreateGenButton(stylesheet=style.ItemEditButton,
+                                          icon_url=imageURLS.AddUrl, icon_size=QtCore.QSize(20, 20),function=partial(self.add_amount))
 
-    def __init__(self, encumberance:ruleTools.Encumberance):
-        super().__init__()
-        self.layout = QVBoxLayout(self)
-        self.setFrameShape(QFrame.Panel)
-        self.encumberance = encumberance
+        minus_button = CreateGenButton(stylesheet=style.ItemEditButton,
+                                            icon_url=imageURLS.MinusUrl, icon_size=QtCore.QSize(20, 20))
 
-    def create_bar_widget(self):
-        frame = QFrame()
-        frame.setFrameShape(QFrame.WinPanel)
-
-        bar_layout = QGridLayout(frame)
-
-        set_points = self.encumberance.get_encumberance_levels()
-        max_weight = set_points[2]
-        # TODO Fix
-        if max_weight == 0:
-            max_weight = 150
-            set_points[1] = 50
-            set_points[0] = 100
-        lvl2 = int(np.ceil(max_weight * self.num_of_bars)) - 1  # minus for 0 index
-        lvl1 = int((set_points[1] / max_weight) * self.num_of_bars) - 1
-        lvl0 = int((set_points[0] / max_weight) * self.num_of_bars) - 1
-
-        empty_color = ["#c7c7c7","#d8cd9c","#d8b69c","#c95e60"]
-        fill_color = ["#919191","#e7d16f","#f000ba","#db292d"]
-        current_weight = self.encumberance.get_weight()
-        current_weight_bar = int((current_weight / max_weight) * self.num_of_bars)
-
-        k = self.num_of_bars - 1
-
-        for i in range(self.num_of_bars):
-            current_level = 0
-            if i > lvl0:
-                current_level += 1
-
-            if i > lvl1:
-                current_level += 1
-
-            if i > lvl2:
-                current_level += 1
-
-            if i < current_weight_bar:
-                color = fill_color[current_level]
-                print("FULL ",color)
-            else:
-                color = empty_color[current_level]
-                print("Empty")
-
-
-            bar = MakeColorWidget(color)
-
-            bar_layout.addWidget(bar,k,0)
-            k -= 1
-
-        bar_layout.setContentsMargins(0, 0, 0, 0)
-        bar_layout.setSpacing(0)
-        return frame
-
-    def add_bars(self):
-        self.layout.addWidget(self.create_bar_widget())
+        self.button_layout.addWidget(add_button, stretch=0)
+        self.button_layout.addWidget(minus_button, stretch=0)
+        self.button_layout.addWidget(edit_button, stretch=0)
+        self.layout.addLayout(self.button_layout)
 
     def update(self):
-        delete(self.layout)
-        self.layout = QVBoxLayout(self)
-        self.add_bars()
+        self.text_label.setText(self.create_text())
 
 
-def MakeColorWidget(color):
+def MakeColorWidget(color, opacity):
     widget = QFrame()
 
-    stylesheet =("QFrame {border-radius: 15px; background-color: " + color + "}"
-     )
+    stylesheet = ("QFrame {border-radius: 5px; background-color: " + color + "}"
+                  )
     widget.setStyleSheet(stylesheet)
-    # widget.setAutoFillBackground(True)
-    #
-    # palette = widget.palette()
-    # palette.setColor(QPalette.Window, QColor(color))
-    # widget.setPalette(palette)
-    # widget.setMinimumHeight(100)
+    # creating a opacity effect
+    widget.opacity_effect = QGraphicsOpacityEffect()
+
+    # setting opacity level
+    widget.opacity_effect.setOpacity(opacity)
+
+    # adding opacity effect to the label
+    widget.setGraphicsEffect(widget.opacity_effect)
+
+    widget.setMinimumHeight(10)
     return widget
 
-
-
 #
 #
-

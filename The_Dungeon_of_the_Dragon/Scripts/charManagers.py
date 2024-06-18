@@ -6,7 +6,7 @@ import ruleTools
 
 class Inventory:
 
-    def __init__(self,encumberance:ruleTools.Encumberance):
+    def __init__(self, encumberance:ruleTools.Encumbrance):
         self.inventory = {}
         self.money = {
             "cp": 0,
