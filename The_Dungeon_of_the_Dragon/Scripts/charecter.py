@@ -147,10 +147,10 @@ class CharacterSheet:
         self.encumberance = ruleTools.Encumbrance(self.AbS['str'])
         self.inventory = charManagers.Inventory(self.encumberance)
 
-
         # Stats for the right top of the screen
 
-
+    def update(self):
+        self.inventory.update()
 
     def get_all_attributes(self):
         return self.AbS

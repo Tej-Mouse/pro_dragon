@@ -22,7 +22,7 @@ from functools import partial
 import charecter
 import pyqt5_Custom as PYCustom
 import appHelperTools as aHT
-from Scripts import objectsDnD, Reading, EZPaths
+from Scripts import objectsDnD, Reading, EZPaths, imageURLS
 import style
 
 
@@ -47,7 +47,7 @@ class DnDWindow(QMainWindow):
         self.scroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.scroll.setWidgetResizable(True)
-        self.scroll.setMinimumSize(900,500)
+        self.scroll.setMinimumSize(900, 500)
         self.scroll.setWidget(widget_scroll)
         self.setCentralWidget(self.scroll)
 
@@ -83,6 +83,14 @@ class DnDWindow(QMainWindow):
         self.stacklayout.addWidget(options_widget)
 
         # Tab Buttons_________________________________________________________________________________________________
+        refresh_button = aHT.CreateGenButton(
+            stylesheet=style.TabButtonSheet1,
+            icon_url=imageURLS.RefreshUrl,
+            icon_size=QtCore.QSize(20, 20),
+            function_list=[partial(self.update)]
+        )
+        refresh_button.setMaximumWidth(30)
+        button_layout.addWidget(refresh_button)
 
         button_layout.addWidget(aHT.CreateTabButton(self.switch_tab, 0, style.LabelFont2,
                                                     style.TabButtonSheet2, "Main Window"))
@@ -92,6 +100,7 @@ class DnDWindow(QMainWindow):
                                                     style.TabButtonSheet2, "Inventory"))
         button_layout.addWidget(aHT.CreateTabButton(self.switch_tab, 3, style.LabelFont2,
                                                     style.TabButtonSheet2, "Options"))
+
 
         """Base Menu_________________________________________________________________________________________________"""
         main_stats_layout = QHBoxLayout()
@@ -144,7 +153,7 @@ class DnDWindow(QMainWindow):
 
         inventory_layout.addWidget(self.inventory_widget.get_widget())
         """Options___________________________________________________________________________________________________"""
-        saveButton = aHT.CreateGenButton("Save",style.LabelFont1,style.SubButtonSheet,self.save,minWidth=400)
+        saveButton = aHT.CreateGenButton("Save", style.LabelFont1, style.SubButtonSheet, self.save, minWidth=400)
 
         DarkModeToggle = QCheckBox()
         DarkModeToggle.setText("Dark Mode Toggled: On")
@@ -158,18 +167,18 @@ class DnDWindow(QMainWindow):
         frame.setMinimumWidth(600)
         options_sub_layout = QVBoxLayout(frame)
         options_sub_layout.addWidget(PYCustom.appHelperTools.CreateSeperator())
-        options_sub_layout.addWidget(saveButton,alignment=QtCore.Qt.AlignCenter)
+        options_sub_layout.addWidget(saveButton, alignment=QtCore.Qt.AlignCenter)
         options_sub_layout.addWidget(DarkModeToggle, alignment=QtCore.Qt.AlignCenter)
         options_sub_layout.addWidget(PYCustom.appHelperTools.CreateSeperator())
 
-        options_layout.addWidget(frame,alignment=QtCore.Qt.AlignCenter)
+        options_layout.addWidget(frame, alignment=QtCore.Qt.AlignCenter)
 
         # options_widget.addLayout(options_layout)
 
     def test(self):
         # self.tcharecter.alter_attribute('prof','starter_level',
         #                                 self.tcharecter.get_specific_attribute('prof').get_total_base() + 3)
-        self.tcharecter.alter_attribute('str','starter_level',800)
+        self.tcharecter.alter_attribute('str', 'starter_level', 800)
         self.tcharecter.alter_attribute('chr', 'starter_level', 8)
         self.tcharecter.alter_attribute('dex', 'starter_level',
                                         self.tcharecter.get_specific_attribute('dex').get_total_base() + 3)
@@ -205,7 +214,7 @@ class DnDWindow(QMainWindow):
         testWeapons = Reading.WeaponReader(EZPaths.Weapon_Path)
         list_weapons = testWeapons.get_all_weapons()
         for i in range(len(list_weapons)):
-            inventory.add_item(list_weapons[i].get_key_name(), list_weapons[i], i+1)
+            inventory.add_item(list_weapons[i].get_key_name(), list_weapons[i], i + 1)
         # self.update()
         self.tcharecter.alter_attribute('prof', 'starter_level',
                                         self.tcharecter.get_specific_attribute('prof').get_total_base() + 3)
@@ -230,6 +239,7 @@ class DnDWindow(QMainWindow):
         self.update()
 
     def update(self):
+        self.tcharecter.update()
         self.attribute_labels.update()
         self.top_widget.update()
         self.mid_widget.update()
@@ -239,7 +249,7 @@ class DnDWindow(QMainWindow):
     def switch_tab(self, index: int):
         self.stacklayout.setCurrentIndex(index)
 
-    def dark_mode_toggle(self,set_text_function, isChecked:bool):
+    def dark_mode_toggle(self, set_text_function, isChecked: bool):
         if isChecked:
             set_text_function("Dark Mode Toggled: OFF PLEASE TURN IT BACK ON OH GOD")
             qdarktheme.setup_theme("light")
@@ -249,7 +259,6 @@ class DnDWindow(QMainWindow):
 
     def save(self):
         print("SAVED!!!!")
-
 
 
 app = QApplication(sys.argv)

@@ -113,6 +113,8 @@ class Item:
     # ___________________________________________________________________
 
     def update_amount(self, new_amount):
+        if new_amount < 0:
+            raise ValueError("Negative Amount Set")
         self.amount = new_amount
 
     def add_amount(self,amount_added):
@@ -122,6 +124,12 @@ class Item:
 
         if self.amount < amount_subtracted:
             raise ValueError("Amount subtracted is less than amount had")
+        else:
+            self.amount -= amount_subtracted
+
+    def safe_subtract(self,amount_subtracted:int):
+        if self.amount < amount_subtracted:
+            self.amount = 0
         else:
             self.amount -= amount_subtracted
 

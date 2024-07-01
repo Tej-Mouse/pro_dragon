@@ -20,6 +20,13 @@ class Inventory:
         self.encumberance = encumberance
 
     def update(self):
+        mark_for_deletion = []
+        for key in self.inventory:
+            if self.inventory[key].get_amount() == 0:
+                mark_for_deletion += [key]
+        for i in range(len(mark_for_deletion)):
+            print(self.inventory[mark_for_deletion[i]])
+            del self.inventory[mark_for_deletion[i]]
         self.encumberance.update()
 
     def add_money(self, amount, denominations):
@@ -54,6 +61,10 @@ class Inventory:
         if self.inventory[key].get_amount() == 0:
             del self.inventory[key]
         self.update()
+
+    def remove_item(self,key):
+        self.encumberance.subtract_weight(self.inventory[key].get_total_weight())
+        del self.inventory[key]
 
     def find_keys_of_item(self, query_item):
         return oHT.regexSearch(query_item, list(self.inventory))

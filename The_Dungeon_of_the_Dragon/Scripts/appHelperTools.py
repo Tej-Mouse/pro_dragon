@@ -21,7 +21,7 @@ from functools import partial
 
 from PyQt5.sip import delete
 
-from Scripts import objectsDnD, style, charManagers, ruleTools, imageURLS
+from Scripts import objectsDnD, style, charManagers, ruleTools, imageURLS, pyObjects
 
 
 def is_number(s):
@@ -107,6 +107,26 @@ def deleteItemsOfLayout(layout):
                 deleteItemsOfLayout(item.layout())
 
 
+class CustomQSpinBox(QSpinBox):
+    def __init__(self,function,operation:str):
+        super().__init__()
+        self.function=function
+        self.operation=operation
+
+        if operation == "add":
+            self.widget_for_info = {"addAmount":self}
+        elif operation == "subtract":
+            self.widget_for_info = {"subtractAmount": self}
+
+    def focusOutEvent(self, QFocusEvent):
+        super(CustomQSpinBox, self).focusOutEvent(QFocusEvent)
+        self.function(self.operation,self.widget_for_info)
+
+    def mousePressEvent(self, QMouseEvent):
+        super(CustomQSpinBox, self).mousePressEvent(QMouseEvent)
+        self.function(self.operation, self.widget_for_info)
+
+
 class ItemLabel(QFrame):
 
     def __init__(self,tinventory:charManagers.Inventory,item: objectsDnD.Item):
@@ -133,51 +153,73 @@ class ItemLabel(QFrame):
         self.layout.addLayout(self.button_layout)
         self.create_button_layout()
 
-    def add_amount(self):
+    def change_amount(self,operation:str):
         self.clear_button_layout()
-        line_edit = QSpinBox()
-        # line_edit.setPlaceholderText("Enter a number")
-        line_edit.setMaximumWidth(300)
-        widget_for_info = {
-            'addAmount': line_edit
-        }
-        line_edit.editings.connect(partial(self.create_confirm_button,'add',widget_for_info))
-        oldfunc = line_edit.keyPressEvent
-        line_edit.keyPressEvent = partial(self.LinekeyPressEvent,oldfunc)
+        self.layout.addLayout(self.button_layout)
+        # spinbox = CustomQSpinBox(self.refresh_edit_layout,operation)
+
+        spinbox = QSpinBox()
+        spinbox.setMaximum(1000000)
+        amount = pyObjects.ReferenceNumber(0,is_int=True)
+
+        spinbox.valueChanged.connect(partial(amount.setValue))
+
+        self.button_layout.addWidget(spinbox)
 
         self.edit_button_layout = QHBoxLayout()
-        self.button_layout.addWidget(line_edit)
         self.button_layout.addLayout(self.edit_button_layout)
-        # self.create_confirm_button('add',widget_for_info)
 
-        self.layout.addLayout(self.button_layout)
+        # self.refresh_edit_layout(operation,widget_for_info)
+        # self.create_cancel_button()
+        # self.refresh_edit_layout('add',widget_for_info)
+        function2 = partial(self.refresh_button_layout)
+        if operation == 'add':
+            # amount = int(widget_for_info['addAmount'].value())
+            function1 = partial(pyObjects.preform,[self.item.add_amount],[amount.getValue])
 
-    def LinekeyPressEvent(self,func,QKeyEvent):
+            confirm_button = CreateGenButton(
+                stylesheet=style.ConfirmEditButton,
+                icon_url=imageURLS.CheckUrl,
+                icon_size=QtCore.QSize(20, 20),
+                function_list=[function1,function2]
+                                     )
+            self.edit_button_layout.addWidget(confirm_button)
+
+        elif operation == 'subtract':
+            function1 = partial(pyObjects.preform, [self.item.safe_subtract], [amount.getValue])
+            confirm_button = CreateGenButton(
+                stylesheet=style.ConfirmEditButton,
+                icon_url=imageURLS.CheckUrl,
+                icon_size=QtCore.QSize(20, 20),
+                function_list=[function1,function2]
+                                     )
+            self.edit_button_layout.addWidget(confirm_button)
+        #
+        cancel_button = CreateGenButton(
+            stylesheet=style.ItemEditButton,
+            icon_url=imageURLS.XUrl,
+            icon_size=QtCore.QSize(20, 20),
+            function_list=[partial(self.refresh_button_layout)]
+        )
+        self.edit_button_layout.addWidget(cancel_button)
+
+        oldfunc = spinbox.keyPressEvent
+        spinbox.keyPressEvent = partial(self.LinekeyPressEvent, oldfunc, function1)
+
+    def LinekeyPressEvent(self,func,operation_function,QKeyEvent):
         func(QKeyEvent)
+        if QKeyEvent.key() == QtCore.Qt.Key_Return:
+            operation_function()
+            self.refresh_button_layout()
 
     def create_cancel_button(self):
-        pass
-
-    def create_confirm_button(self,function_string:str,suplimentary:dict=None):
-        deleteItemsOfLayout(self.edit_button_layout)
-        self.edit_button_layout = QHBoxLayout()
-        if function_string == 'add':
-            amount = suplimentary['addAmount'].text()
-            if is_number(amount):
-                function = partial(self.item.add_amount,int(amount))
-                button = CreateGenButton(
-                    stylesheet=style.ItemEditButton,
-                    icon_url=imageURLS.CheckUrl,
-                    icon_size=QtCore.QSize(20, 20),
-                    function_list=[function,partial(self.refresh_button_layout)]
-                                         )
-                self.edit_button_layout.addWidget(button)
-                # self.edit_button_layout.addWidget(QLineEdit())
-                self.button_layout.addLayout(self.edit_button_layout)
-
-            else:
-                self.add_amount()
-
+        button = CreateGenButton(
+            stylesheet=style.ItemEditButton,
+            icon_url=imageURLS.XUrl,
+            icon_size=QtCore.QSize(20, 20),
+            function_list=[partial(self.refresh_button_layout)]
+        )
+        self.edit_button_layout.addWidget(button)
 
     def create_text(self):
         text = ''
@@ -208,10 +250,10 @@ class ItemLabel(QFrame):
                                            icon_url=imageURLS.IconUrl, icon_size=QtCore.QSize(20, 20))
 
         add_button = CreateGenButton(stylesheet=style.ItemEditButton,
-                                          icon_url=imageURLS.AddUrl, icon_size=QtCore.QSize(20, 20),function=partial(self.add_amount))
+                                          icon_url=imageURLS.AddUrl, icon_size=QtCore.QSize(20, 20),function=partial(self.change_amount,"add"))
 
         minus_button = CreateGenButton(stylesheet=style.ItemEditButton,
-                                            icon_url=imageURLS.MinusUrl, icon_size=QtCore.QSize(20, 20))
+                                            icon_url=imageURLS.MinusUrl, icon_size=QtCore.QSize(20, 20),function=partial(self.change_amount,"subtract"))
 
         self.button_layout.addWidget(add_button, stretch=0)
         self.button_layout.addWidget(minus_button, stretch=0)
